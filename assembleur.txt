@@ -1,0 +1,57 @@
+L'architecture comprend 4 types d'instructions : Load, jump, branch, et R-type.
+Les instructions sont codées sur 32bits, décomposés comme suit :
+
+[3bits] [          29 bits                 ]
+
+Les 3 premiers bits contiennent l'opcode de l'instruction, c'est à dire son type. Au vu du jeu d'instruction réduit, ces bits permettent de donner directement mes valeurs de contrôle sans se préoccuper de mettre en place une table de vérité. On obtient les valeurs de contrôle suivantes :
+	- datasrc : choisit l'entrée du bloc de registre contenant les données à écrire. 
+		0 : sortie de l'ALU. 1 : la constante étendue à 32 bits contenue dans les 16bits bas de l'instruction
+		définie comme le 3éme bit de l'opcode
+	- regWrite : choisit si on va écrire ou non dans les registres
+		0 : on garde les valeurs des registres, 1 : on écrit dans 1 registre
+		définie comme l'opposé du premier bit de l'opcode
+	- jump : choisit la valeur du prochain PC : soit celle venant de l'ALU, soit celle venant des 29bits de la partie basse de l'instruction.
+		1 : on prend la valeur de l'instr. 0 : on prend la valeur de l'ALU
+		définie comme le 2éme bit de l'opcode
+	- branch (br) : choisit la valeur du prochain PC 
+		0 : on prend PC + 4 , 1 : on prend l'addresse donnée par l'instruction de branchement étendue à 32bits 
+		définie comme le premier bit d'opcode
+	- writeReg : choisit la source de l'addresse du registre à écrire, sur 5 bits.
+		0 : partie 16:20 de l'instruction, 1 : partie 11 15 de l'instruction.
+		définie comme l'opposé du 3éme bit d'opcode
+	
+	
+* R type.
+Les instrucions arithmétiques et logique
+[ 3bits ] [ 3bits vides] [ 5 bits ] [ 5 bits ] [ 5 bits ] [ 5 bits vides ] [ 6bits ]
+opcode     vide           rs          rt        rd         vide             ALUfunc
+
+Les 6 bits d'ALUfunc choisissent l'opération que l'ALU doit effectuer. Seuls les 3 bits de poids faible comptent
+ALUopérations : 
+	000 : AND
+	100 : OR
+	010 : ADD
+l'opcode et 000, donc : datasrc = résultat de l'instrution.
+			regWrite = 1 on écrit le résultat dans le registre
+			jump = 0, on jump pas
+			branch = 0, on prend l'instruction suivante
+			writeReg = 1 onprend la partie rd 11:15 de l'instruction comme registre de destination. 
+
+* Load 
+
+load immediate  
+[ 3bits ] [ 3bits ] [ 5bits] [ 5 bits ] [ 16 bits ]
+opcode     vide        vide       rd     entier signé 16bits
+
+l'opcode est : 001, donc : datasrc = 1, partie basse de l'instruction en entrée des registre
+			   regWrite = 1, on écrit dans le registre
+			   jump = 0, branch = 0, on prend l'instruction suivante pour PC
+			   writeReg : 0, on prend la partie rd 26:20 comme destination
+
+* Jump 
+Les instruction de saut, avec juste jump dans les faits
+[ 3bits ] [         29 bits           ] 
+opcode       addresse du futur PC 
+
+l'opcode est 110, donc datasrc = 0,
+			regWrite = 
