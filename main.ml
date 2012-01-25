@@ -37,13 +37,13 @@ let blOfInt size  n =
   let assemble_branch rs rt addr instr =
     let rs = blOfInt 5 rs in
     let rt = blOfInt 5 rt in 
-    let addr =
+    let addrv =
       try 
 	Hashtbl.find addresses addr 
       with Not_found -> failwith "undefined label"
     in
     match instr with 
-      | "beq" -> (blOfInt 16 (addr - !pc)) @ (rt @ (rs @ branch))
+      | "beq" ->  (blOfInt 16 (addrv - (!pc + 1))) @ (rt @ (rs @ branch))
       | _ -> failwith "Not implemented" 
 	
   let assemble_jump addr = function
@@ -82,14 +82,14 @@ let blOfInt size  n =
     let toBin li = 
       let atom acc instr = 
 	match instr with
-	  | R(s,rs,rt,rd) -> incr pc; (assemble_r_types rs rt rd s)::acc
-	  | Load(s, rd,n) -> incr pc; (assemble_load rd n s)::acc
-	  | Jump(s,addr) -> incr pc; (assemble_jump addr s)::acc
-	  | Branch(s,rs,rt,addr) -> incr pc; (assemble_branch rs rt addr s)::acc
-	  | Empty -> acc
+	  | R(s,rs,rt,rd) -> decr pc; (assemble_r_types rs rt rd s)::acc
+	  | Load(s, rd,n) -> decr pc; (assemble_load rd n s)::acc
+	  | Jump(s,addr) -> decr pc; (assemble_jump addr s)::acc
+	  | Branch(s,rs,rt,addr) -> decr pc; (assemble_branch rs rt addr s)::acc
+	  | _ -> failwith "impossible"
 	
       in
-      List.fold_left atom  []  li
+      List.fold_left atom  [] li
 
 let ifile = ref "" 
 let set_file f s = f := s
@@ -111,6 +111,7 @@ let () =
   let instrList = Parser.prog Asm.instr buf in
   close_in f;
   pc := 0 ;
+  let instrList = List.fold_left (fun acc e -> match e with Empty -> acc | _ -> incr pc; (e::acc)) [] instrList in
   let instrList = toBin instrList in
   let binary  = Array.of_list instrList in
   Array.iter (fun i -> prettyPrint i; Printf.printf "\n" ) binary;
