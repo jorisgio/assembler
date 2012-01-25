@@ -43,7 +43,7 @@ let blOfInt size  n =
       with Not_found -> failwith "undefined label"
     in
     match instr with 
-      | "beq" ->  (blOfInt 16 (addr - (!pc + 1))) @ (rt @ (rs @ branch))
+      | "beq" -> (blOfInt 16 (addr - !pc)) @ (rt @ (rs @ branch))
       | _ -> failwith "Not implemented" 
 	
   let assemble_jump addr = function
@@ -80,7 +80,7 @@ let blOfInt size  n =
 
 
     let toBin li = 
-      let atom instr acc = 
+      let atom acc instr = 
 	match instr with
 	  | R(s,rs,rt,rd) -> incr pc; (assemble_r_types rs rt rd s)::acc
 	  | Load(s, rd,n) -> incr pc; (assemble_load rd n s)::acc
@@ -89,7 +89,7 @@ let blOfInt size  n =
 	  | Empty -> acc
 	
       in
-      List.fold_right atom li [] 
+      List.fold_left atom  []  li
 
 let ifile = ref "" 
 let set_file f s = f := s
@@ -114,6 +114,7 @@ let () =
   let instrList = toBin instrList in
   let binary  = Array.of_list instrList in
   Array.iter (fun i -> prettyPrint i; Printf.printf "\n" ) binary;
+  Printf.printf "\n%d\n" (Array.length binary); 
   let f = open_out "a.out" in
   output_value f binary;
   close_out f;
