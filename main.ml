@@ -43,7 +43,7 @@ let blOfInt size  n =
       with Not_found -> failwith "undefined label"
     in
     match instr with 
-      | "beq" ->  (blOfInt 16 addr) @ (rt @ (rs @ branch))
+      | "beq" ->  (blOfInt 16 (addr - (!pc + 1))) @ (rt @ (rs @ branch))
       | _ -> failwith "Not implemented" 
 	
   let assemble_jump addr = function
@@ -82,10 +82,10 @@ let blOfInt size  n =
     let toBin li = 
       let atom instr acc = 
 	match instr with
-	  | R(s,rs,rt,rd) -> (assemble_r_types rs rt rd s)::acc
-	  | Load(s, rd,n) -> (assemble_load rd n s)::acc
-	  | Jump(s,addr) -> (assemble_jump addr s)::acc
-	  | Branch(s,rs,rt,addr) -> (assemble_branch rs rt addr s)::acc
+	  | R(s,rs,rt,rd) -> incr pc; (assemble_r_types rs rt rd s)::acc
+	  | Load(s, rd,n) -> incr pc; (assemble_load rd n s)::acc
+	  | Jump(s,addr) -> incr pc; (assemble_jump addr s)::acc
+	  | Branch(s,rs,rt,addr) -> incr pc; (assemble_branch rs rt addr s)::acc
 	  | Empty -> acc
 	
       in
@@ -110,6 +110,7 @@ let () =
   let buf = Lexing.from_channel f in
   let instrList = Parser.prog Asm.instr buf in
   close_in f;
+  pc := 0 ;
   let instrList = toBin instrList in
   let binary  = Array.of_list instrList in
   Array.iter (fun i -> prettyPrint i; Printf.printf "\n" ) binary;
