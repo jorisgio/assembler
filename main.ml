@@ -103,7 +103,7 @@ let prettyPrint instr =
     in
     Printf.printf "%d" bit) instr 
   
-let usage = Printf.sprintf "Usage : %s  <file.lics>" Sys.argv.(0) 
+let usage = Printf.sprintf "Usage : %s  <file.s>" Sys.argv.(0) 
 let () = 
   Arg.parse [] (set_file ifile) usage;
   let f = open_in !ifile in

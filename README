@@ -1,0 +1,4 @@
+Pour compiler, faire :
+ocamlbuild main.native -use-menhir
+Pour utiliser faire ./main.native montre.s
+La sortie se trouve dans a.out
