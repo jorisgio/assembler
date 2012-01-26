@@ -66,7 +66,6 @@ let blOfInt size  n =
       | "add" -> [false;true;false;false;false;false]
       | "sub" -> [false;true;false;true;false;false]
       | "and" -> [false;false;false;false;false;false]
-      | "nand" -> [false;false;false;true;false;false]
       | "or" -> [true;false;false;false;false;false]
       | _ -> failwith "not implemented"
     in
